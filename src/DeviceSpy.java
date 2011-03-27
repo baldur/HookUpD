@@ -42,8 +42,8 @@ public class DeviceSpy extends TimerTask {
                 while(iterator.hasNext()) {
                     try {
                         Object ob = iterator.next();
-                        File file = new File(ob.toString());
-                        ReLocator.cp(file.toString(), destinationFolder+file.getName());
+                        ReLocator rl = new ReLocator(ob.toString(), destinationFolder);
+                        rl.cp();
                     }catch(java.io.IOException exp){ 
                         exp.printStackTrace();
                     } 
