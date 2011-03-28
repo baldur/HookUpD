@@ -9,8 +9,14 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import javax.swing.*;
 
 public class DeviceSpy extends TimerTask {
+    public JFrame frame;
+    public DeviceSpy(JFrame f) {
+        frame = f;
+    }
+
     public void run() {
         // this will be in a settings file
         Properties prop = new Properties();
@@ -43,6 +49,9 @@ public class DeviceSpy extends TimerTask {
                     try {
                         Object ob = iterator.next();
                         ReLocator rl = new ReLocator(ob.toString(), destinationFolder);
+                        frame.setTitle(ob.toString());
+                        frame.getContentPane().add(new JLabel(
+                             ob.toString()));
                         rl.cp();
                     }catch(java.io.IOException exp){ 
                         exp.printStackTrace();
