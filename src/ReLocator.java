@@ -4,6 +4,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.BufferedOutputStream;
 import java.io.BufferedInputStream;
 import java.util.ArrayList;
@@ -23,31 +25,43 @@ public class ReLocator {
         targetLocation = target;
     }
 
+    static final int BUFF_SIZE = 100000;
+    static final byte[] buffer = new byte[BUFF_SIZE];
+
     public void cp() throws IOException {
-        System.out.println(fileName);  
-        System.out.println(targetLocation);  
         File inputFile = new File(fileName);
-        File outputFile = new File(targetLocation + inputFile.getName());
+        InputStream fis = null;
+        OutputStream out = null; 
+        String md5 = null;
 
-        FileInputStream fis = new FileInputStream( inputFile );
-        String md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex( fis );
-
-        if(fileAlreadyCopied(md5)) {
-            return;
+        try {
+            fis = new FileInputStream(fileName);
+            //important a new fis needs to be used since I can't figure out how to revind the file in java
+            md5 = org.apache.commons.codec.digest.DigestUtils.md5Hex( new FileInputStream(fileName) );
+            if(fileAlreadyCopied(md5)) {
+                return;
+            }
+            out = new FileOutputStream(targetLocation + inputFile.getName());
+            while (true) {
+                synchronized (buffer) {
+                    int amountRead = fis.read(buffer);
+                    if (amountRead == -1) {
+                        break;
+                    }
+                    out.write(buffer, 0, amountRead); 
+                }
+            } 
+        } finally {
+            if (fis != null) {
+                fis.close();
+            }
+            if (out != null) {
+                out.close();
+            }
+            // document that the file has been copied
+            storeMD5s(md5);
         }
-
-        FileReader in = new FileReader(inputFile);
-        FileWriter out = new FileWriter(outputFile);
-        int c;
-
-        while ((c = in.read()) != -1) {
-            out.write(c);
-        }
-
-        storeMD5s(md5);
-        in.close();
-        out.close();
-    }
+    } 
 
     private Boolean fileAlreadyCopied(String md5) {
         ArrayList md5s = readMD5s();
