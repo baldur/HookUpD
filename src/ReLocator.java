@@ -15,6 +15,8 @@ public class ReLocator {
     public String fileName;
     public String targetLocation;
     public String md5sum;
+    private String basePath = System.getProperty("user.home") + "/Library/Application Support/HookUpD/";
+    private String filesCopiedXml = basePath + "filesCopied.xml";
 
     public ReLocator(String name, String target) {
         fileName = name;
@@ -60,10 +62,10 @@ public class ReLocator {
     private ArrayList readMD5s() {
         ArrayList md5s = null;
         try {
-            String xml = "filesCopied.xml";
+            new File(basePath).mkdir();
             XMLDecoder d = new XMLDecoder(
                                new BufferedInputStream(
-                                   new FileInputStream( xml )));
+                                   new FileInputStream( filesCopiedXml )));
             Object result = d.readObject();
             md5s = (ArrayList)result;
             d.close();
@@ -85,9 +87,8 @@ public class ReLocator {
     
     private void writeMD5(ArrayList md5s) {
         try {
-            String xml = "filesCopied.xml";
             XMLEncoder e = new XMLEncoder(new BufferedOutputStream(
-                                     new FileOutputStream( xml )));
+                                     new FileOutputStream( filesCopiedXml )));
             e.writeObject(md5s);
             e.close();
         } catch(Exception e) {
